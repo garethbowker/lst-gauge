@@ -1,6 +1,6 @@
 -- LAAP Sim Tech Gauge
 
-gauge_type = user_prop_add_enum("Gauge Type", "None,ASI,Fuel Tank (1),Fuel Tank (2),Fuel Tank (3),Fuel Tank (4),RPM,VSI", "None", "Please choose the gauge type")
+gauge_type = user_prop_add_enum("Gauge Type", "None,ASI,Fuel Tank (1),Fuel Tank (2),RPM,VSI", "None", "Please choose the gauge type")
 gauge_rotation_direction = user_prop_add_enum("Gauge Direction", "Clockwise, Counter-clockwise", "Clockwise", "Which way does the gauge turn when its value is incrementing?")
 gauge_requires_power = user_prop_add_boolean("Gauge Requires Power", false, "Does the gauge require bus power to function?")
 gauge_power_source = user_prop_add_enum("Gauge Power Source", "Bus 1,Bus 2,Avionics", "Bus 1", "If the gauge requires power, to which power bus is it connected?")
@@ -102,26 +102,53 @@ function gauge_post_init(c)
         hw_stepper_motor_position(gauge, 1.0)
     end
 
-    gauge_value_subscription_string = "x"
-    gauge_value_subscription_string_type = "x"
-    gauge_value_subscription_index = -1
+    xpl_gauge_value_subscription_string = "x"
+    xpl_gauge_value_subscription_string_type = "x"
+    xpl_gauge_value_subscription_index = -1
+
+    fs2020_gauge_value_subscription_string = "x"
+    fs2020_gauge_value_subscription_string_type = "x"
+    fs2020_gauge_value_subscription_index = -1
 
     g_type = user_prop_get(gauge_type)
     if (g_type == "None") then
         print("Gauge is set to None!")
         return nil
     elseif (g_type == "Fuel Tank (1)") then
-        gauge_value_subscription_string = "sim/cockpit2/fuel/fuel_quantity"
-        gauge_value_subscription_string_type = "FLOAT[8]"
-        gauge_value_subscription_index = 1
+        xpl_gauge_value_subscription_string = "sim/cockpit2/fuel/fuel_quantity"
+        xpl_gauge_value_subscription_string_type = "FLOAT[8]"
+        xpl_gauge_value_subscription_index = 1
+        fs2020_gauge_value_subscription_string = "FUEL TANK LEFT MAIN QUANTITY"
+        fs2020_gauge_value_subscription_string_type = "Gallons"
+        fs2020_gauge_value_subscription_index = -1
     elseif (g_type == "Fuel Tank (2)") then
-        gauge_value_subscription_string = "sim/cockpit2/fuel/fuel_quantity"
-        gauge_value_subscription_string_type = "FLOAT[8]"
-        gauge_value_subscription_index = 2
+        xpl_gauge_value_subscription_string = "sim/cockpit2/fuel/fuel_quantity"
+        xpl_gauge_value_subscription_string_type = "FLOAT[8]"
+        xpl_gauge_value_subscription_index = 2
+        fs2020_gauge_value_subscription_string = "FUEL TANK RIGHT MAIN QUANTITY"
+        fs2020_gauge_value_subscription_string_type = "Gallons"
+        fs2020_gauge_value_subscription_index = -1
     elseif (g_type == "ASI") then
-        gauge_value_subscription_string = "sim/flightmodel/position/indicated_airspeed"
-        gauge_value_subscription_string_type = "FLOAT"
-        gauge_value_subscription_index = -1
+        xpl_gauge_value_subscription_string = "sim/flightmodel/position/indicated_airspeed"
+        xpl_gauge_value_subscription_string_type = "FLOAT"
+        xpl_gauge_value_subscription_index = -1
+        fs2020_gauge_value_subscription_string = "AIRSPEED INDICATED"
+        fs2020_gauge_value_subscription_string_type = "Knots"
+        fs2020_gauge_value_subscription_index = -1
+    elseif (g_type == "RPM") then
+        xpl_gauge_value_subscription_string = "sim/cockpit2/engine/indicators/prop_speed_rpm"
+        xpl_gauge_value_subscription_string_type = "FLOAT[8]"
+        xpl_gauge_value_subscription_index = -1
+        fs2020_gauge_value_subscription_string = "PROP RPM:1"
+        fs2020_gauge_value_subscription_string_type = "RPM"
+        fs2020_gauge_value_subscription_index = -1
+    elseif (g_type == "VSI") then
+        xpl_gauge_value_subscription_string = "sim/cockpit2/gauges/indicators/vvi_fpm_pilot"
+        xpl_gauge_value_subscription_string_type = "FLOAT"
+        xpl_gauge_value_subscription_index = -1
+        fs2020_gauge_value_subscription_string = "VERTICAL SPEED"
+        fs2020_gauge_value_subscription_string_type = "Feet per minute"
+        fs2020_gauge_value_subscription_index = -1
     else
         print("Unknown gauge type: " .. g_type)
     end
@@ -138,7 +165,8 @@ function gauge_post_init(c)
         end
     end
 
-    xpl_dataref_subscribe(gauge_value_subscription_string, gauge_value_subscription_string_type, gauge_update)
+    xpl_dataref_subscribe(xpl_gauge_value_subscription_string, xpl_gauge_value_subscription_string_type, gauge_update)
+    fs2020_variable_subscribe(fs2020_gauge_value_subscription_string, fs2020_gauge_value_subscription_string_type, gauge_update)
 
     gauge_is_initialising = false
     gauge_initialised = true
