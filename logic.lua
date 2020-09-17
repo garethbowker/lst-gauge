@@ -13,10 +13,12 @@ gauge_restrict_angle_to_min = user_prop_add_integer("Restrict rotation to angle 
 gauge_restrict_angle_to_max = user_prop_add_integer("Restrict rotation to angle (Maximum)", 1, gauge_max_rotation, gauge_max_rotation, "If you don't want the gauge to rotate to its fullest, you can restrict its maximum angle here.")
 
 --gauge = hw_stepper_motor_add("Gauge", "4WIRE_4STEP", 720, 30, false)
-gauge = hw_stepper_motor_add("Gauge", "4WIRE_4STEP", 720, 10)
+gauge = hw_stepper_motor_add("Gauge", "4WIRE_4STEP", 720, 10, false)
 gauge_backlight = hw_led_add("Backlight", 0.0)
 
-gauge_value_subscription_index = -1
+xpl_gauge_value_subscription_index = -1
+fs2020_gauge_value_subscription_index = -1
+
 gauge_volts_subscription_index = -1
 
 gauge_is_initialising = false
@@ -50,10 +52,18 @@ function calculate_gauge_value(val)
     return v
 end
 
-function gauge_update(value)
-    print("Gauge updating.")
+function xpl_gauge_update(value)
+    gauge_update(value, xpl_gauge_value_subscription_index)
+end
+
+function fs2020_gauge_update(value)
+    gauge_update(value, fs2020_gauge_value_subscription_index)
+end
+
+function gauge_update(value, gauge_value_subscription_index)
+    print("Gauge updating. gauge_value_subscription_index = " .. gauge_value_subscription_index)
     local_value = 0
-    if (gauge_value == -1) then
+    if (gauge_value_subscription_index == -1) then
         local_value = value -- can be over-ridden for debug
     else
         local_value = value[gauge_value_subscription_index]
@@ -94,7 +104,7 @@ function gauge_init()
 end
 
 function gauge_post_init(c)
-    if (gauge_rotation_direction == "Clockwise") then
+    if (user_prop_get(gauge_rotation_direction) == "Clockwise") then
         hw_stepper_motor_calibrate(gauge, 0.0)
         hw_stepper_motor_position(gauge, 0.0)
     else
@@ -165,8 +175,10 @@ function gauge_post_init(c)
         end
     end
 
-    xpl_dataref_subscribe(xpl_gauge_value_subscription_string, xpl_gauge_value_subscription_string_type, gauge_update)
-    fs2020_variable_subscribe(fs2020_gauge_value_subscription_string, fs2020_gauge_value_subscription_string_type, gauge_update)
+    print("Subscription XPL for '" .. xpl_gauge_value_subscription_string .. "' of type '" .. xpl_gauge_value_subscription_string_type .. "'")
+    print("Subscription MSFS for '" .. fs2020_gauge_value_subscription_string .. "' of type '" .. fs2020_gauge_value_subscription_string_type .. "'")
+    xpl_dataref_subscribe(xpl_gauge_value_subscription_string, xpl_gauge_value_subscription_string_type, xpl_gauge_update)
+    fs2020_variable_subscribe(fs2020_gauge_value_subscription_string, fs2020_gauge_value_subscription_string_type, fs2020_gauge_update)
 
     gauge_is_initialising = false
     gauge_initialised = true
