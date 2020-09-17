@@ -9,7 +9,7 @@ gauge_min_value = user_prop_add_real("Minimum Value", -5000.0, 5000.0, 0.0, "Min
 gauge_max_value = user_prop_add_real("Maximum Value", -5000.0, 5000.0, 100.0, "Maximum value for the dial to display")
 gauge_max_rotation = 315
 
-gauge_restrict_angle_to_min = user_prop_add_integer("Restrict rotation to angle (Minimum)", 0, 0, gauge_max_rotation-1, "If you don't want the gauge to rotate to its fullest, you can restrict its minimum angle here. Useful for gauges that leave the stop when powered.")
+gauge_restrict_angle_to_min = user_prop_add_integer("Restrict rotation to angle (Minimum)", 0, gauge_max_rotation-1, 0, "If you don't want the gauge to rotate to its fullest, you can restrict its minimum angle here. Useful for gauges that leave the stop when powered.")
 gauge_restrict_angle_to_max = user_prop_add_integer("Restrict rotation to angle (Maximum)", 1, gauge_max_rotation, gauge_max_rotation, "If you don't want the gauge to rotate to its fullest, you can restrict its maximum angle here.")
 
 --gauge = hw_stepper_motor_add("Gauge", "4WIRE_4STEP", 720, 30, false)
