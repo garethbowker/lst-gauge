@@ -95,10 +95,10 @@ function gauge_init()
     gauge_initialised = false
 
     -- Initialization starting, rotate for 3 seconds to get back to the absolute minimum value for the dial, which may be less than the set minimum rotation value
-    if (gauge_rotation_direction == "Clockwise") then
-        hw_stepper_motor_position(gauge, nil, "ENDLESS_CLOCKWISE")
-    else
+    if (user_prop_get(gauge_rotation_direction) == "Clockwise") then
         hw_stepper_motor_position(gauge, nil, "ENDLESS_COUNTERCLOCKWISE")
+    else
+        hw_stepper_motor_position(gauge, nil, "ENDLESS_CLOCKWISE")
     end
     timer_start(3000, gauge_post_init)
 end
